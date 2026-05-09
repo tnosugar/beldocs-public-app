@@ -1,0 +1,1478 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Milena i Miloš idu na Beldocs</title>
+<style>
+  :root {
+    --bg: #fbf6ee;
+    --card: #ffffff;
+    --ink: #1a2238;
+    --muted: #6b7280;
+    --accent: #d4471c;
+    --accent-soft: #fde2d4;
+    --love: #e11d48;
+    --love-soft: #ffe4e6;
+    --line: #e5e0d6;
+    --warn: #b45309;
+    --warn-soft: #fef3c7;
+    --ok: #065f46;
+    --ok-soft: #d1fae5;
+    --danger: #b91c1c;
+    --danger-soft: #fee2e2;
+    --shadow: 0 1px 2px rgba(26,34,56,.05), 0 4px 12px rgba(26,34,56,.06);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px; }
+  header.hero {
+    text-align: center;
+    padding: 24px 0 16px;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 24px;
+  }
+  header.hero h1 {
+    font-size: clamp(28px, 4.5vw, 44px);
+    margin: 0 0 8px;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  header.hero .marker { color: var(--accent); }
+  header.hero p {
+    color: var(--muted);
+    margin: 0;
+    font-size: 15px;
+  }
+
+  /* Sync bar */
+  .sync-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+  }
+  .sync-bar .info {
+    color: var(--muted);
+  }
+  .sync-bar .info .count {
+    color: var(--love);
+    font-weight: 600;
+  }
+  .sync-bar .info .unsaved {
+    color: var(--warn);
+    font-weight: 600;
+    margin-left: 8px;
+  }
+  .sync-bar .actions { display: flex; gap: 8px; }
+  .sync-bar button {
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .sync-bar button.secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .sync-bar button:hover { opacity: 0.9; }
+  .sync-bar button:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Tab nav */
+  nav.tabs {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 28px;
+  }
+  nav.tabs button {
+    background: none;
+    border: none;
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all .15s;
+    font-family: inherit;
+  }
+  nav.tabs button:hover { color: var(--ink); }
+  nav.tabs button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
+  nav.tabs button .count {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 8px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  nav.tabs button.active .count { background: var(--accent); color: #fff; }
+
+  .tab-section { display: none; }
+  .tab-section.active { display: block; animation: fadeIn .2s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .view-toggle {
+    display: inline-flex;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 4px;
+    margin-bottom: 24px;
+  }
+  .view-toggle button {
+    background: none;
+    border: none;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .view-toggle button.active {
+    background: var(--ink);
+    color: #fff;
+  }
+  .sub-view { display: none; }
+  .sub-view.active { display: block; }
+
+  /* Cards */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .film-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: border-color .2s, box-shadow .2s;
+  }
+  .film-card.must-see {
+    border-color: var(--love);
+    box-shadow: 0 0 0 1px var(--love), var(--shadow);
+  }
+  .film-card h3 {
+    margin: 0 0 8px;
+    font-size: 18px;
+    line-height: 1.3;
+    padding-right: 36px;
+  }
+  .film-card .desc {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 14px;
+    flex: 1;
+  }
+  .heart-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    color: #d1d5db;
+    transition: color .15s, transform .15s;
+    line-height: 0;
+  }
+  .heart-btn:hover { transform: scale(1.15); color: var(--love); }
+  .heart-btn.active { color: var(--love); }
+  .heart-btn svg { width: 24px; height: 24px; }
+  .film-card .projections {
+    border-top: 1px dashed var(--line);
+    padding-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .proj-row {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: #fbf8f2;
+    font-size: 13px;
+  }
+  .proj-row .when { font-weight: 600; color: var(--ink); }
+  .proj-row .where { color: var(--muted); }
+  .proj-row .extra { color: var(--accent); font-size: 12px; margin-top: 2px; }
+
+  /* Calendar */
+  .calendar { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; }
+  .cal-day {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  .cal-day h4 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .cal-day h4 .num { color: var(--ink); font-size: 16px; margin-right: 4px; }
+  .cal-slot {
+    padding: 8px;
+    margin-bottom: 6px;
+    background: #fbf8f2;
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+  .cal-slot.must-see { border-left-color: var(--love); background: var(--love-soft); }
+  .cal-slot .time { font-weight: 700; color: var(--accent); }
+  .cal-slot.must-see .time { color: var(--love); }
+  .cal-slot .title { font-weight: 600; display: block; margin: 2px 0; }
+  .cal-slot .place { color: var(--muted); font-size: 11px; }
+  .cal-slot .heart-mini { float: right; color: var(--love); font-size: 12px; }
+
+  @media (max-width: 900px) { .calendar { grid-template-columns: 1fr; } }
+
+  /* Schedule */
+  .scenario-intro {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 24px;
+    box-shadow: var(--shadow);
+  }
+  .scenario-intro h2 { margin: 0 0 6px; font-size: 22px; }
+  .scenario-intro p { margin: 0; color: var(--muted); }
+  .scenario-intro .stats {
+    display: flex;
+    gap: 24px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .stat {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 13px;
+  }
+  .stat.must { background: var(--love-soft); color: var(--love); }
+
+  .day-block { margin-bottom: 18px; }
+  .day-block h3 {
+    font-size: 14px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .schedule-item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: grid;
+    grid-template-columns: 80px 1fr auto;
+    gap: 16px;
+    align-items: center;
+    box-shadow: var(--shadow);
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .schedule-item.must-see { border-left: 4px solid var(--love); }
+  .schedule-item.conflict { border-left: 4px solid var(--danger); background: #fff8f8; }
+  .schedule-item .time {
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+  }
+  .schedule-item.must-see .time { color: var(--love); }
+  .schedule-item .info h4 { margin: 0 0 2px; font-size: 16px; }
+  .schedule-item .info h4 .heart-inline { color: var(--love); margin-right: 4px; }
+  .schedule-item .info .place { color: var(--muted); font-size: 13px; }
+  .schedule-item .info .note,
+  .schedule-item .info .warn,
+  .schedule-item .info .conflict-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    margin-top: 4px;
+    margin-right: 4px;
+  }
+  .schedule-item .info .note  { background: var(--ok-soft);   color: var(--ok); }
+  .schedule-item .info .warn  { background: var(--warn-soft); color: var(--warn); }
+  .schedule-item .info .conflict-tag { background: var(--danger-soft); color: var(--danger); }
+  .skipped {
+    opacity: 0.65;
+    font-size: 13px;
+    color: var(--muted);
+    padding: 8px 14px;
+    border-left: 3px solid var(--line);
+    margin: 4px 0 8px;
+  }
+  .skipped strong { color: var(--ink); }
+  .skipped.must-see-dropped { border-left-color: var(--love); opacity: 1; color: var(--danger); }
+  .skipped.must-see-dropped strong { color: var(--love); }
+
+  @media (max-width: 600px) {
+    .schedule-item { grid-template-columns: 1fr; gap: 6px; }
+  }
+
+  footer {
+    margin-top: 48px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  .toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    opacity: 0;
+    transition: opacity .2s;
+    pointer-events: none;
+    z-index: 100;
+    max-width: 90vw;
+  }
+  .toast.show { opacity: 1; }
+  .toast.error { background: var(--danger); }
+  .toast.success { background: var(--ok); }
+
+  /* Modal */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 28px;
+    max-width: 520px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { margin: 0 0 12px; font-size: 22px; }
+  .modal p { color: var(--muted); font-size: 14px; line-height: 1.5; margin: 0 0 16px; }
+  .modal ol { color: var(--muted); font-size: 14px; padding-left: 20px; line-height: 1.7; margin: 0 0 16px; }
+  .modal ol code {
+    background: #f3f4f6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .modal a { color: var(--accent); }
+  .modal label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 16px 0 6px;
+    color: var(--ink);
+  }
+  .modal input[type="password"], .modal input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 13px;
+    background: #fafaf7;
+  }
+  .modal input:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+  .modal .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  .modal .modal-actions button {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .modal .modal-actions .primary { background: var(--ink); color: #fff; }
+  .modal .modal-actions .secondary { background: transparent; color: var(--muted); border: 1px solid var(--line); }
+  .modal .modal-actions .danger { background: transparent; color: var(--danger); border: 1px solid var(--danger-soft); }
+  .modal .status-saved {
+    background: var(--ok-soft);
+    color: var(--ok);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>Milena i Miloš <span class="marker">idu na</span> Beldocs</h1>
+    <p>Festival 20–26. maj 2026. · 17 filmova · 25 projekcija</p>
+  </header>
+
+  <div class="sync-bar">
+    <div class="info">
+      <span class="count" id="mustCount">0</span> Must See
+      <span class="unsaved" id="unsavedFlag" style="display:none">· nesinhronizovano</span>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="resetBtn">Reset</button>
+      <button class="secondary" id="settingsBtn" title="Podešavanja sync-a">⚙</button>
+      <button id="syncBtn">↻ Sync to GitHub</button>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h2>Sync podešavanja</h2>
+      <p>Klik na <strong>Sync to GitHub</strong> može da:</p>
+      <ol style="margin-top: 0;">
+        <li><strong>Direktan commit</strong> — preko GitHub Actions workflow-a (treba ti token).</li>
+        <li><strong>Skida fajl</strong> (ako nema tokena) — pa ručno pokreneš <code>_sync-must-see.sh</code>.</li>
+      </ol>
+      <p style="border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px;">
+        <strong>Za direktan commit:</strong> napravi <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained PAT</a> sa skopovima:
+      </p>
+      <ol>
+        <li>Repository access: <code>Only select repositories</code> → izaberi <code>beldocs-private</code></li>
+        <li>Permissions: <code>Contents: Read and write</code> i <code>Metadata: Read</code></li>
+        <li>Kopiraj generisani <code>github_pat_…</code> token i zalepi ovde:</li>
+      </ol>
+      <div id="tokenStatus"></div>
+      <label for="tokenInput">GitHub PAT</label>
+      <input type="password" id="tokenInput" placeholder="github_pat_..." autocomplete="off" spellcheck="false" />
+      <p style="font-size: 12px; color: var(--muted); margin-top: 6px;">
+        Token se čuva u localStorage tvog browsera, ne šalje se nigde osim na <code>api.github.com</code>.
+      </p>
+      <div class="modal-actions">
+        <button class="danger" id="tokenClearBtn">Obriši token</button>
+        <button class="secondary" id="modalCloseBtn">Zatvori</button>
+        <button class="primary" id="tokenSaveBtn">Sačuvaj</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="tabs" id="tabnav">
+    <button class="active" data-tab="all">Svi filmovi <span class="count">17</span></button>
+    <button data-tab="must">Must See <span class="count" id="mustTabCount">0</span></button>
+    <button data-tab="max">Maksimum filmova <span class="count" id="maxTabCount">14</span></button>
+    <button data-tab="unique">Samo jedinstveni filmovi <span class="count">17</span></button>
+  </nav>
+
+  <section class="tab-section active" id="tab-all">
+    <div class="view-toggle" id="viewToggle">
+      <button class="active" data-view="cards">Po filmu</button>
+      <button data-view="calendar">Kalendar</button>
+    </div>
+    <div class="sub-view active" id="view-cards">
+      <div class="cards-grid" id="cardsGrid"></div>
+    </div>
+    <div class="sub-view" id="view-calendar">
+      <div class="calendar" id="calendarGrid"></div>
+    </div>
+  </section>
+
+  <section class="tab-section" id="tab-must">
+    <div class="scenario-intro">
+      <h2>Must See raspored</h2>
+      <p id="mustIntro">Samo filmovi koje ste označili sa ♥. Slotovi su izabrani tako da se međusobno ne sukobljavaju.</p>
+      <div class="stats">
+        <span class="stat must" id="mustStatTotal">0 filmova</span>
+        <span class="stat" id="mustStatConflict" style="display:none">0 konflikata</span>
+      </div>
+    </div>
+    <div id="scheduleMustOnly"></div>
+  </section>
+
+  <section class="tab-section" id="tab-max">
+    <div class="scenario-intro">
+      <h2>Maksimum filmova</h2>
+      <p id="maxIntro">Najveći broj različitih filmova bez vremenskih konflikata. Must See filmovi su pinovani crvenim srcima.</p>
+      <div class="stats">
+        <span class="stat" id="maxStatTotal">0 filmova</span>
+        <span class="stat must" id="maxStatMust">0 Must See</span>
+        <span class="stat" id="maxStatDropped">0 izostavljenih</span>
+      </div>
+    </div>
+    <div id="scheduleMax"></div>
+  </section>
+
+  <section class="tab-section" id="tab-unique">
+    <div class="scenario-intro">
+      <h2>Samo jedinstveni filmovi</h2>
+      <p>Po jedna projekcija za svaki od 17 filmova. Konflikti su crveno označeni; vi birate šta da preskočite.</p>
+      <div class="stats">
+        <span class="stat">17 filmova</span>
+        <span class="stat" id="uniqueMustStat">0 Must See</span>
+      </div>
+    </div>
+    <div id="scheduleUnique"></div>
+  </section>
+
+  <footer>
+    Podaci sa <a href="https://www.beldocs.rs" target="_blank" rel="noopener">beldocs.rs</a> · Raspored za Milenu i Miloša
+  </footer>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== DATA ======
+
+const films = [
+  { title: "Yugo ide u Ameriku", duration: 87,
+    desc: "Četiri mlada prijatelja iz Beograda voze od Njujorka do Los Anđelesa u Jugu, kultnom automobilu iz osamdesetih.",
+    projections: [
+      { day: "20.05", date: "2026-05-20", time: "19:30", place: "Dom omladine Beograda", extra: "razgovor sa ekipom" },
+      { day: "25.05", date: "2026-05-25", time: "17:30", place: "Kulturni centar Beograda", extra: "razgovor sa ekipom" },
+    ]},
+  { title: "Zajednički život – malo sutra!", duration: 88,
+    desc: "Stand-up komičarka i zaštitno lice izraelsko-palestinskog mirovnog procesa, suočava publiku sa istinama koje nisu nimalo smešne.",
+    projections: [
+      { day: "21.05", date: "2026-05-21", time: "17:00", place: "Tuckwood", extra: "razgovor sa publikom" },
+      { day: "24.05", date: "2026-05-24", time: "20:00", place: "Cineplexx Ušće" },
+    ]},
+  { title: "Dame i gospodo, gospodin Leonard Koen", duration: 80,
+    desc: "Neformalni portret tridesetogodišnjeg Leonarda Koena kakvog niste videli — sirov, šarmantan i u potrazi za inspiracijom.",
+    projections: [
+      { day: "21.05", date: "2026-05-21", time: "17:30", place: "Dom omladine Beograda" },
+    ]},
+  { title: "Mrkli mrak", duration: 80,
+    desc: "Filmsko istraživanje pešačenja i njegove veze sa migracijom u Centralnoj Americi.",
+    projections: [
+      { day: "21.05", date: "2026-05-21", time: "18:00", place: "Jugoslovenska kinoteka", extra: "uz prateći film" },
+    ]},
+  { title: "Agatin almanah", duration: 90,
+    desc: "Prkoseći modernosti, devedesetogodišnja Agata vodi usamljenički život na svom porodičnom imanju, čuvajući nasledno seme.",
+    projections: [
+      { day: "21.05", date: "2026-05-21", time: "20:30", place: "Art bioskop Kolarac" },
+    ]},
+  { title: "Lisica pod ružičastim Mesecom", duration: 76,
+    desc: "Nepristajanje na nasilje i nepokolebljivi otpor nepravdi šesnaestogodišnje avganistanske devojke.",
+    projections: [
+      { day: "22.05", date: "2026-05-22", time: "18:00", place: "Jugoslovenska kinoteka", extra: "razgovor sa publikom" },
+      { day: "25.05", date: "2026-05-25", time: "18:30", place: "Art bioskop Kolarac" },
+    ]},
+  { title: "Slobodni grad Kristijanija", duration: 94,
+    desc: "Više od 50 godina, zajednica zasnovana na slobodi, konsenzusu i otporu istrajava u borbi za pravo na postojanje.",
+    projections: [
+      { day: "22.05", date: "2026-05-22", time: "18:30", place: "Art bioskop Kolarac" },
+      { day: "24.05", date: "2026-05-24", time: "20:30", place: "Jugoslovenska kinoteka" },
+    ]},
+  { title: "80 gnevnih novinara", duration: 90,
+    desc: "Kada se najveća redakcija u Mađarskoj uruši pod političkim pritiskom, jedan novinar nastavlja da snima — priča iznutra o otporu za slobodu medija.",
+    projections: [
+      { day: "22.05", date: "2026-05-22", time: "21:30", place: "Tuckwood" },
+    ]},
+  { title: "Ferrari Studentski Grand Prix", duration: 75,
+    desc: "Pojavom Ferrari zastave na protestu počela je trka koja traje već 30 godina. Dok je zastava tu, vera studenata u pobedu nikada neće prestati.",
+    projections: [
+      { day: "23.05", date: "2026-05-23", time: "16:00", place: "Tuckwood", extra: "razgovor sa ekipom" },
+      { day: "24.05", date: "2026-05-24", time: "20:00", place: "Cineplexx Ušće" },
+    ]},
+  { title: "Narodne priče", duration: 90,
+    desc: "U ruralnoj srednjoj školi u arktičkoj Norveškoj, tinejdžeri mogu da se oslone samo na sebe i na odani čopor sibirskih haskija.",
+    projections: [
+      { day: "23.05", date: "2026-05-23", time: "17:30", place: "Dom omladine Beograda", extra: "razgovor sa publikom" },
+    ]},
+  { title: "Misteriozni paket", duration: 85,
+    desc: "Već više od dve decenije misteriozni paket s božićnim poklonima pojavljuje se pred kućom porodice u Norveškoj. Mladi detektivi odlučuju da reše misteriju pre Badnje večeri.",
+    projections: [
+      { day: "23.05", date: "2026-05-23", time: "20:00", place: "Cineplexx Ušće" },
+      { day: "24.05", date: "2026-05-24", time: "15:30", place: "Kulturni centar Beograda", extra: "razgovor sa ekipom" },
+    ]},
+  { title: "Tekplomatija", duration: 94,
+    desc: "Od slobode govora do lažnih vesti i veštačke inteligencije — 33-godišnja Dankinja imenovana je za tehnološku ambasadorku sa globalnim mandatom.",
+    projections: [
+      { day: "23.05", date: "2026-05-23", time: "20:30", place: "Art bioskop Kolarac" },
+      { day: "26.05", date: "2026-05-26", time: "17:30", place: "Kulturni centar Beograda", extra: "razgovor sa ekipom" },
+    ]},
+  { title: "Veliki gazda", duration: 88,
+    desc: "Ko je čovek koji je iz senke upravljao evropskom istorijom? Špijunski dokumentarac kroz burne događaje 20. veka.",
+    projections: [
+      { day: "24.05", date: "2026-05-24", time: "15:00", place: "Dom omladine Beograda", extra: "razgovor sa rediteljem" },
+    ]},
+  { title: "Fantazija", duration: 80,
+    desc: "Zaboravljena u vozu, sveska jedne mlade žene otkriva radoznalom mladiću svet strahova i fantazija njene vlasnice.",
+    projections: [
+      { day: "24.05", date: "2026-05-24", time: "15:00", place: "Tuckwood" },
+    ]},
+  { title: "Ispod horizonta", duration: 80,
+    desc: "Arheološka iskopavanja u Klenku otkrivaju davno zaboravljene svetove koji se skrivaju ispod horizonta svakodnevice.",
+    projections: [
+      { day: "24.05", date: "2026-05-24", time: "17:30", place: "Dom omladine Beograda", extra: "razgovor sa ekipom" },
+      { day: "26.05", date: "2026-05-26", time: "18:30", place: "Art bioskop Kolarac" },
+    ]},
+  { title: "Draga sutrašnjice", duration: 82,
+    desc: "U Japanu dvoje ljudi ima više zajedničkog nego što misle — film o usamljenosti u modernom svetu i o pronalaženju hrabrosti da se ponovo povežu sa životom.",
+    projections: [
+      { day: "25.05", date: "2026-05-25", time: "20:30", place: "Jugoslovenska kinoteka", extra: "razgovor sa publikom" },
+    ]},
+  { title: "Beograd bez kompromisa", duration: 51,
+    desc: "Dva prijatelja istražuju nezavisnu muzičku scenu Beograda. Trep, hardkor i rok umetnici koji stvaraju uprkos teškim uslovima.",
+    projections: [
+      { day: "26.05", date: "2026-05-26", time: "19:00", place: "Tuckwood", extra: "razgovor sa ekipom · 600 RSD" },
+    ]},
+];
+
+const days = [
+  { key: "20.05", date: "2026-05-20", label: "SREDA",      num: "20.05" },
+  { key: "21.05", date: "2026-05-21", label: "ČETVRTAK",   num: "21.05" },
+  { key: "22.05", date: "2026-05-22", label: "PETAK",      num: "22.05" },
+  { key: "23.05", date: "2026-05-23", label: "SUBOTA",     num: "23.05" },
+  { key: "24.05", date: "2026-05-24", label: "NEDELJA",    num: "24.05" },
+  { key: "25.05", date: "2026-05-25", label: "PONEDELJAK", num: "25.05" },
+  { key: "26.05", date: "2026-05-26", label: "UTORAK",     num: "26.05" },
+];
+
+const TRANSIT_BUFFER_MIN = 10;   // realistic Beograd inter-bioskop transit
+const SAME_LOC_BUFFER_MIN = 5;
+
+// Datumi kada Must See filmovi ne mogu da se gledaju (npr. neko od nas nije tu).
+// Ostali (non-Must-See) filmovi i dalje mogu — ovaj constraint važi samo za ♥.
+const MUST_SEE_BLOCKED_DATES = {
+  "2026-05-21": "Milena nije tu",
+};
+
+// ====== STATE ======
+
+const STORAGE_KEY = "beldocs-must-see";
+const SYNC_KEY = "beldocs-must-see-synced-at";
+const TOKEN_KEY = "beldocs-gh-token";
+const REPO_OWNER = "tnosugar";
+const REPO_NAME  = "beldocs-private";
+
+let mustSee = new Set();           // current local selection (titles)
+let syncedSnapshot = "";           // JSON of last-synced state, for unsaved-detection
+let ghToken = "";                  // GitHub PAT (if user has set one)
+
+function loadLocalState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.mustSee)) mustSee = new Set(parsed.mustSee);
+      if (typeof parsed.syncedSnapshot === "string") syncedSnapshot = parsed.syncedSnapshot;
+    }
+  } catch (e) { console.warn("localStorage parse failed", e); }
+}
+function saveLocalState() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    mustSee: Array.from(mustSee),
+    syncedSnapshot,
+  }));
+}
+
+async function fetchRepoMustSee() {
+  try {
+    const resp = await fetch("must-see.json", { cache: "no-cache" });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch (e) {
+    return null;
+  }
+}
+
+async function reconcileWithRepo() {
+  const repo = await fetchRepoMustSee();
+  if (!repo) return;
+  const repoSnap = JSON.stringify((repo.mustSee || []).slice().sort());
+  const currentSnap = currentSnapshot();
+
+  // First run on this browser — adopt repo state as ground truth.
+  if (!syncedSnapshot) {
+    mustSee = new Set(repo.mustSee || []);
+    syncedSnapshot = repoSnap;
+    saveLocalState();
+    return;
+  }
+
+  // Repo matches our last successful sync — nothing to merge.
+  if (repoSnap === syncedSnapshot) return;
+
+  // Repo differs from our last sync. Either:
+  // (a) someone synced from another device — adopt remote if we have no local edits, OR
+  // (b) we have local edits — keep them, user resolves via Sync.
+  if (currentSnap === syncedSnapshot) {
+    mustSee = new Set(repo.mustSee || []);
+    syncedSnapshot = repoSnap;
+    saveLocalState();
+    showToast("Učitan novi must-see iz repo-a");
+  }
+  // else: local edits in flight; do not overwrite them.
+}
+
+function currentSnapshot() {
+  return JSON.stringify(Array.from(mustSee).sort());
+}
+function hasUnsavedChanges() {
+  return currentSnapshot() !== syncedSnapshot;
+}
+
+// ====== TIME / CONFLICT MATH ======
+
+function startMinutes(slot) {
+  const [h, m] = slot.time.split(":").map(Number);
+  return h * 60 + m;
+}
+function endMinutes(slot, film) {
+  return startMinutes(slot) + (film.duration || 90);
+}
+function conflicts(a, b, filmA, filmB) {
+  if (a.date !== b.date) return false;
+  const buf = (a.place === b.place) ? SAME_LOC_BUFFER_MIN : TRANSIT_BUFFER_MIN;
+  const aStart = startMinutes(a), aEnd = endMinutes(a, filmA);
+  const bStart = startMinutes(b), bEnd = endMinutes(b, filmB);
+  return aStart < bEnd + buf && bStart < aEnd + buf;
+}
+
+// ====== SCHEDULER ======
+// Returns { scheduled, dropped, conflictedMust, blockedMust }
+function scheduleMaxFilms() {
+  const mustSees = films.filter(f => mustSee.has(f.title));
+  const others   = films.filter(f => !mustSee.has(f.title));
+
+  // Assign Must Sees with backtracking.
+  // Sort by number of *allowed* slots (fewest first — most constrained).
+  const allowedSlotsOf = f => f.projections.filter(s => !(s.date in MUST_SEE_BLOCKED_DATES));
+  const ms = [...mustSees].sort((a, b) => allowedSlotsOf(a).length - allowedSlotsOf(b).length);
+
+  const placed = [];                  // [{film, slot}]
+  const conflictedMust = [];          // must-sees whose chosen slot conflicts with another must-see
+  const blockedMust = [];             // must-sees whose all slots fall on blocked dates
+
+  function fits(slot, film) {
+    return placed.every(p => !conflicts(slot, p.slot, film, p.film));
+  }
+
+  function tryAssignMust(idx) {
+    if (idx >= ms.length) return true;
+    const film = ms[idx];
+    const allowed = allowedSlotsOf(film);
+
+    if (allowed.length === 0) {
+      // Every projection is on a blocked date — skip placing this film entirely.
+      blockedMust.push(film);
+      return tryAssignMust(idx + 1);
+    }
+
+    for (const slot of allowed) {
+      if (fits(slot, film)) {
+        placed.push({ film, slot });
+        if (tryAssignMust(idx + 1)) return true;
+        placed.pop();
+      }
+    }
+    // No allowed slot fits — Must See ↔ Must See time conflict. Force-include
+    // the first allowed slot, mark conflict, continue.
+    conflictedMust.push(film);
+    placed.push({ film, slot: allowed[0], forced: true });
+    const ok = tryAssignMust(idx + 1);
+    if (!ok) {
+      placed.pop();
+      conflictedMust.pop();
+      return false;
+    }
+    return true;
+  }
+  tryAssignMust(0);
+
+  // Greedy add others.
+  // Single-slot films first (most constrained), then by earliest end time.
+  const otherSorted = [...others].sort((a, b) => {
+    if (a.projections.length !== b.projections.length) {
+      return a.projections.length - b.projections.length;
+    }
+    const aEnd = Math.min(...a.projections.map(s => endMinutes(s, a)));
+    const bEnd = Math.min(...b.projections.map(s => endMinutes(s, b)));
+    return aEnd - bEnd;
+  });
+  const droppedOthers = [];
+  for (const film of otherSorted) {
+    let placedSlot = null;
+    // Try slots in chronological order.
+    const slots = [...film.projections].sort((s1, s2) => {
+      if (s1.date !== s2.date) return s1.date.localeCompare(s2.date);
+      return startMinutes(s1) - startMinutes(s2);
+    });
+    for (const slot of slots) {
+      if (fits(slot, film)) { placedSlot = slot; break; }
+    }
+    if (placedSlot) {
+      placed.push({ film, slot: placedSlot });
+    } else {
+      droppedOthers.push(film);
+    }
+  }
+
+  // Build output.
+  const scheduled = placed.map(p => ({
+    film: p.film,
+    slot: p.slot,
+    mustSee: mustSee.has(p.film.title),
+    conflict: conflictedMust.includes(p.film),
+  })).sort((a, b) => {
+    if (a.slot.date !== b.slot.date) return a.slot.date.localeCompare(b.slot.date);
+    return startMinutes(a.slot) - startMinutes(b.slot);
+  });
+
+  const dropped = droppedOthers.map(f => ({
+    film: f,
+    mustSee: false,
+    reason: dropReason(f, scheduled),
+  }));
+
+  return { scheduled, dropped, conflictedMust, blockedMust };
+}
+
+function dropReason(film, scheduled) {
+  // Find which scheduled item conflicts with each of this film's slots.
+  const conflictsList = film.projections.map(slot => {
+    const blocker = scheduled.find(s => conflicts(slot, s.slot, film, s.film));
+    if (blocker) return `${slot.day} ${slot.time} sukob sa „${blocker.film.title}“`;
+    return `${slot.day} ${slot.time} slobodan`;
+  });
+  return conflictsList.join(" · ");
+}
+
+// ====== RENDERERS ======
+
+function heartSvg(filled) {
+  return filled
+    ? `<svg viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3.5 4 7.5 4c2 0 3.5 1 4.5 2.5C13 5 14.5 4 16.5 4c4 0 7 4.5 5 8.5C19 16.65 12 21 12 21z"/></svg>`
+    : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3.5 4 7.5 4c2 0 3.5 1 4.5 2.5C13 5 14.5 4 16.5 4c4 0 7 4.5 5 8.5C19 16.65 12 21 12 21z"/></svg>`;
+}
+
+function renderCards() {
+  const grid = document.getElementById("cardsGrid");
+  grid.innerHTML = films.map(f => {
+    const isMust = mustSee.has(f.title);
+    return `
+      <article class="film-card${isMust ? ' must-see' : ''}" data-title="${escapeHtml(f.title)}">
+        <button class="heart-btn${isMust ? ' active' : ''}" data-action="toggle-must" data-title="${escapeHtml(f.title)}" aria-label="Označi kao Must See" title="Must See">
+          ${heartSvg(isMust)}
+        </button>
+        <h3>${escapeHtml(f.title)}</h3>
+        <p class="desc">${escapeHtml(f.desc)} <em style="color:#9ca3af">(${f.duration}′)</em></p>
+        <div class="projections">
+          ${f.projections.map(p => `
+            <div class="proj-row">
+              <span class="when">${p.day}.2026. · ${p.time}</span>
+              <span class="where">${escapeHtml(p.place)}</span>
+              ${p.extra ? `<span class="extra">${escapeHtml(p.extra)}</span>` : ""}
+            </div>
+          `).join("")}
+        </div>
+      </article>
+    `;
+  }).join("");
+
+  // Attach click handlers
+  grid.querySelectorAll('[data-action="toggle-must"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const t = btn.dataset.title;
+      if (mustSee.has(t)) mustSee.delete(t);
+      else mustSee.add(t);
+      saveLocalState();
+      onMustSeeChange();
+    });
+  });
+}
+
+function renderCalendar() {
+  const grid = document.getElementById("calendarGrid");
+  const slotsByDay = {};
+  days.forEach(d => slotsByDay[d.key] = []);
+  films.forEach(f => {
+    f.projections.forEach(p => {
+      slotsByDay[p.day].push({ time: p.time, title: f.title, place: p.place });
+    });
+  });
+  Object.keys(slotsByDay).forEach(k => slotsByDay[k].sort((a, b) => a.time.localeCompare(b.time)));
+
+  grid.innerHTML = days.map(d => `
+    <div class="cal-day">
+      <h4><span class="num">${d.num}</span> ${d.label}</h4>
+      ${slotsByDay[d.key].map(s => {
+        const isMust = mustSee.has(s.title);
+        return `
+          <div class="cal-slot${isMust ? ' must-see' : ''}">
+            ${isMust ? '<span class="heart-mini">♥</span>' : ''}
+            <span class="time">${s.time}</span>
+            <span class="title">${escapeHtml(s.title)}</span>
+            <span class="place">${escapeHtml(s.place)}</span>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `).join("");
+}
+
+function renderMaxScenario() {
+  const target = document.getElementById("scheduleMax");
+  const intro  = document.getElementById("maxIntro");
+  const total  = document.getElementById("maxStatTotal");
+  const must   = document.getElementById("maxStatMust");
+  const drop   = document.getElementById("maxStatDropped");
+  const tabCount = document.getElementById("maxTabCount");
+
+  const result = scheduleMaxFilms();
+  const { scheduled, dropped, conflictedMust, blockedMust } = result;
+
+  total.textContent = scheduled.length + " filmova";
+  must.textContent  = scheduled.filter(s => s.mustSee).length + " Must See";
+  drop.textContent  = (dropped.length + (blockedMust ? blockedMust.length : 0)) + " izostavljenih";
+  tabCount.textContent = scheduled.length;
+
+  if (mustSee.size === 0) {
+    intro.innerHTML = "Najveći broj različitih filmova bez vremenskih konflikata. Označi <strong style='color:var(--love)'>♥ Must See</strong> filmove na kartice da ih pinuješ ovde.";
+  } else {
+    const issues = conflictedMust.length + ((blockedMust || []).length);
+    if (issues > 0) {
+      const parts = [];
+      if (conflictedMust.length) parts.push(`${conflictedMust.length} vremenski sukob`);
+      if ((blockedMust || []).length) parts.push(`${blockedMust.length} blokiran datumom`);
+      intro.innerHTML = `<span style="color:var(--danger);font-weight:600">⚠ Must See problemi: ${parts.join(", ")}</span> — pogledaj crvene oznake i listu izostavljenih.`;
+    } else {
+      intro.innerHTML = "Must See filmovi su pinovani (♥). Ostali su raspoređeni greedy oko njih.";
+    }
+  }
+
+  // Group by date.
+  const byDate = {};
+  scheduled.forEach(it => {
+    if (!byDate[it.slot.date]) byDate[it.slot.date] = [];
+    byDate[it.slot.date].push(it);
+  });
+
+  let html = mustSee.size > 0 ? blockedDatesBanner() : "";
+  Object.keys(byDate).sort().forEach(date => {
+    const dayInfo = days.find(d => d.date === date);
+    const items = byDate[date];
+    html += `<div class="day-block"><h3>${dayInfo.label} · ${date.split("-").reverse().join(".")}.</h3>`;
+    items.forEach(it => {
+      const cls = it.conflict ? 'conflict' : (it.mustSee ? 'must-see' : '');
+      html += `
+        <div class="schedule-item ${cls}">
+          <div class="time">${it.slot.time}</div>
+          <div class="info">
+            <h4>${it.mustSee ? '<span class="heart-inline">♥</span>' : ''}${escapeHtml(it.film.title)}</h4>
+            <div class="place">${escapeHtml(it.slot.place)}</div>
+            ${it.slot.extra ? `<span class="note">${escapeHtml(it.slot.extra)}</span>` : ""}
+            ${it.conflict ? `<span class="conflict-tag">⚡ Must See sukob — ovaj termin se preklapa sa drugim Must See filmom</span>` : ""}
+          </div>
+        </div>
+      `;
+    });
+    html += "</div>";
+  });
+
+  const totalDropped = dropped.length + (blockedMust ? blockedMust.length : 0);
+  if (totalDropped > 0) {
+    html += `<div class="day-block"><h3>Izostavljeni filmovi (${totalDropped})</h3>`;
+    if (blockedMust && blockedMust.length) {
+      blockedMust.forEach(film => {
+        const reasons = film.projections.map(s => {
+          const r = MUST_SEE_BLOCKED_DATES[s.date];
+          return `${s.day} ${s.time}${r ? ` — ${escapeHtml(r)}` : ''}`;
+        }).join(" · ");
+        html += `<div class="skipped must-see-dropped"><strong>♥ ${escapeHtml(film.title)}</strong> — sve projekcije blokirane: ${reasons}</div>`;
+      });
+    }
+    dropped.forEach(d => {
+      html += `<div class="skipped"><strong>${escapeHtml(d.film.title)}</strong> — ${escapeHtml(d.reason)}</div>`;
+    });
+    html += "</div>";
+  }
+
+  target.innerHTML = html;
+}
+
+function blockedDatesBanner() {
+  const entries = Object.entries(MUST_SEE_BLOCKED_DATES);
+  if (entries.length === 0) return "";
+  const items = entries.map(([d, reason]) => {
+    const day = days.find(x => x.date === d);
+    const label = day ? `${day.label} ${day.num}` : d;
+    return `<strong>${label}</strong> (${escapeHtml(reason)})`;
+  }).join(", ");
+  return `<div style="background: var(--love-soft); color: var(--love); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; border-left: 3px solid var(--love);">
+    <strong>Must See ne mogu biti</strong>: ${items}
+  </div>`;
+}
+
+function renderMustOnly() {
+  const target = document.getElementById("scheduleMustOnly");
+  const intro  = document.getElementById("mustIntro");
+  const totalStat = document.getElementById("mustStatTotal");
+  const conflictStat = document.getElementById("mustStatConflict");
+  const tabCount = document.getElementById("mustTabCount");
+
+  tabCount.textContent = mustSee.size;
+
+  if (mustSee.size === 0) {
+    target.innerHTML = `
+      <div style="background: var(--card); border: 1px dashed var(--line); border-radius: 12px; text-align: center; padding: 48px 24px; color: var(--muted);">
+        <div style="font-size: 42px; color: var(--love); margin-bottom: 12px;">♡</div>
+        <p style="margin: 0 0 6px; color: var(--ink); font-weight: 600;">Još nijedan Must See</p>
+        <p style="margin: 0;">Otvori tab <strong style="color:var(--ink)">Svi filmovi</strong> i klikni ♥ na karticu filma da ga dodaš ovde.</p>
+      </div>`;
+    totalStat.textContent = "0 filmova";
+    conflictStat.style.display = "none";
+    return;
+  }
+
+  const result = scheduleMaxFilms();
+  const mustItems = result.scheduled.filter(s => s.mustSee);
+  const conflictsList = mustItems.filter(s => s.conflict);
+  const blocked = result.blockedMust || [];
+
+  totalStat.textContent = mustItems.length + " filmova";
+  const issues = conflictsList.length + blocked.length;
+  if (issues > 0) {
+    conflictStat.textContent = issues + (issues === 1 ? " problem" : " problema");
+    conflictStat.style.display = "inline-block";
+    conflictStat.style.background = "var(--danger-soft)";
+    conflictStat.style.color = "var(--danger)";
+    const parts = [];
+    if (conflictsList.length) parts.push(`${conflictsList.length} ${conflictsList.length === 1 ? 'film se vremenski sukobljava' : 'filmova se vremenski sukobljava'}`);
+    if (blocked.length)       parts.push(`${blocked.length} ${blocked.length === 1 ? 'film blokiran datumom' : 'filmova blokirano datumom'}`);
+    intro.innerHTML = `<span style="color:var(--danger);font-weight:600">⚠ ${parts.join(", ")}</span> — pogledaj crvene oznake.`;
+  } else {
+    conflictStat.style.display = "none";
+    intro.innerHTML = "Samo filmovi koje si označio sa ♥. Slotovi su izabrani tako da se međusobno ne sukobljavaju.";
+  }
+
+  const byDate = {};
+  mustItems.forEach(it => {
+    if (!byDate[it.slot.date]) byDate[it.slot.date] = [];
+    byDate[it.slot.date].push(it);
+  });
+
+  let html = blockedDatesBanner();
+  Object.keys(byDate).sort().forEach(date => {
+    const dayInfo = days.find(d => d.date === date);
+    const items = byDate[date];
+    html += `<div class="day-block"><h3>${dayInfo.label} · ${date.split("-").reverse().join(".")}.</h3>`;
+    items.forEach(it => {
+      const cls = it.conflict ? 'conflict' : 'must-see';
+      html += `
+        <div class="schedule-item ${cls}">
+          <div class="time">${it.slot.time}</div>
+          <div class="info">
+            <h4><span class="heart-inline">♥</span>${escapeHtml(it.film.title)}</h4>
+            <div class="place">${escapeHtml(it.slot.place)}</div>
+            ${it.slot.extra ? `<span class="note">${escapeHtml(it.slot.extra)}</span>` : ""}
+            ${it.conflict ? `<span class="conflict-tag">⚡ Must See sukob — preklapa se sa drugim Must See filmom</span>` : ""}
+          </div>
+        </div>
+      `;
+    });
+    html += "</div>";
+  });
+
+  if (blocked.length > 0) {
+    html += `<div class="day-block"><h3>Blokirani datumom (${blocked.length})</h3>`;
+    blocked.forEach(film => {
+      const reasons = film.projections.map(s => {
+        const r = MUST_SEE_BLOCKED_DATES[s.date];
+        return `${s.day} ${s.time}${r ? ` — ${escapeHtml(r)}` : ''}`;
+      }).join(" · ");
+      html += `<div class="skipped must-see-dropped"><strong>♥ ${escapeHtml(film.title)}</strong> — sve projekcije su na blokiranim datumima: ${reasons}</div>`;
+    });
+    html += "</div>";
+  }
+
+  target.innerHTML = html;
+}
+
+function renderUniqueScenario() {
+  const target = document.getElementById("scheduleUnique");
+  const mustStat = document.getElementById("uniqueMustStat");
+
+  // For each film, pick first projection (chronological).
+  const items = films.map(film => {
+    const slot = [...film.projections].sort((a, b) => {
+      if (a.date !== b.date) return a.date.localeCompare(b.date);
+      return startMinutes(a) - startMinutes(b);
+    })[0];
+    return { film, slot };
+  });
+
+  // Detect conflicts among these chosen slots.
+  items.forEach(it => {
+    it.conflict = items.some(other =>
+      other !== it && conflicts(it.slot, other.slot, it.film, other.film)
+    );
+  });
+
+  mustStat.textContent = items.filter(it => mustSee.has(it.film.title)).length + " Must See";
+
+  // Group by date.
+  items.sort((a, b) => {
+    if (a.slot.date !== b.slot.date) return a.slot.date.localeCompare(b.slot.date);
+    return startMinutes(a.slot) - startMinutes(b.slot);
+  });
+
+  const byDate = {};
+  items.forEach(it => {
+    if (!byDate[it.slot.date]) byDate[it.slot.date] = [];
+    byDate[it.slot.date].push(it);
+  });
+
+  let html = "";
+  Object.keys(byDate).sort().forEach(date => {
+    const dayInfo = days.find(d => d.date === date);
+    const dayItems = byDate[date];
+    html += `<div class="day-block"><h3>${dayInfo.label} · ${date.split("-").reverse().join(".")}.</h3>`;
+    dayItems.forEach(it => {
+      const isMust = mustSee.has(it.film.title);
+      const cls = it.conflict ? 'conflict' : (isMust ? 'must-see' : '');
+      html += `
+        <div class="schedule-item ${cls}">
+          <div class="time">${it.slot.time}</div>
+          <div class="info">
+            <h4>${isMust ? '<span class="heart-inline">♥</span>' : ''}${escapeHtml(it.film.title)}</h4>
+            <div class="place">${escapeHtml(it.slot.place)}</div>
+            ${it.slot.extra ? `<span class="note">${escapeHtml(it.slot.extra)}</span>` : ""}
+            ${it.conflict ? `<span class="conflict-tag">⚡ vremenski konflikt sa drugim filmom</span>` : ""}
+          </div>
+        </div>
+      `;
+    });
+    html += "</div>";
+  });
+
+  target.innerHTML = html;
+}
+
+// ====== UI HELPERS ======
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c]);
+}
+
+function showToast(msg, dur = 3500, kind = "") {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.remove("error", "success");
+  if (kind) t.classList.add(kind);
+  t.classList.add("show");
+  clearTimeout(showToast._h);
+  showToast._h = setTimeout(() => t.classList.remove("show"), dur);
+}
+
+function updateSyncBar() {
+  document.getElementById("mustCount").textContent = mustSee.size;
+  document.getElementById("unsavedFlag").style.display = hasUnsavedChanges() ? "inline" : "none";
+}
+
+function onMustSeeChange() {
+  updateSyncBar();
+  renderCards();
+  renderCalendar();
+  renderMustOnly();
+  renderMaxScenario();
+  renderUniqueScenario();
+}
+
+function downloadMustSeeJson() {
+  const payload = {
+    lastUpdated: new Date().toISOString(),
+    mustSee: Array.from(mustSee).sort(),
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url;
+  a.download = "must-see.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  // Mark current as synced.
+  syncedSnapshot = currentSnapshot();
+  saveLocalState();
+  updateSyncBar();
+  showToast("Skinut must-see.json — pokreni ~/work/projects/_sync-must-see.sh");
+}
+
+async function dispatchMustSeeUpdate() {
+  const btn = document.getElementById("syncBtn");
+  const originalLabel = btn.textContent;
+  // Snapshot the state we're sending — only mark THIS as synced once the
+  // workflow has actually committed it to the repo (verified via polling).
+  const dispatchedSnap = currentSnapshot();
+  const payload = {
+    event_type: "update-must-see",
+    client_payload: {
+      lastUpdated: new Date().toISOString(),
+      mustSee: Array.from(mustSee).sort(),
+    },
+  };
+  btn.disabled = true;
+  btn.textContent = "Šaljem…";
+  try {
+    const resp = await fetch(`https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/dispatches`, {
+      method: "POST",
+      headers: {
+        "Accept": "application/vnd.github+json",
+        "Authorization": `Bearer ${ghToken}`,
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    if (resp.status === 204) {
+      showToast("✓ Workflow pokrenut — pratim status…", 3500, "success");
+      pollUntilRepoMatches(dispatchedSnap);
+    } else if (resp.status === 401 || resp.status === 403) {
+      showToast("Token odbijen — otvaram podešavanja.", 4000, "error");
+      // Auto-reveal settings so user can replace the bad token.
+      document.getElementById("settingsBtn").style.display = "";
+      setTimeout(openSettings, 300);
+    } else if (resp.status === 404) {
+      showToast("Repo nije pronađen ili token nema pristup.", 5000, "error");
+      document.getElementById("settingsBtn").style.display = "";
+    } else {
+      const text = await resp.text();
+      console.error("dispatch failed:", resp.status, text);
+      showToast(`Greška ${resp.status} — vidi konzolu za detalje.`, 5000, "error");
+    }
+  } catch (e) {
+    console.error(e);
+    showToast("Network greška — pogledaj konzolu.", 5000, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalLabel;
+  }
+}
+
+// Poll the raw must-see.json file until it matches the snapshot we dispatched.
+// Only then update syncedSnapshot — that way, refreshing the page mid-workflow
+// doesn't mistakenly "adopt" the still-stale repo file and clobber local edits.
+async function pollUntilRepoMatches(targetSnap) {
+  const maxTries = 18;        // ~90s total
+  const delayMs  = 5000;
+  for (let i = 0; i < maxTries; i++) {
+    await new Promise(r => setTimeout(r, delayMs));
+    const repo = await fetchRepoMustSee();
+    if (repo) {
+      const repoSnap = JSON.stringify((repo.mustSee || []).slice().sort());
+      if (repoSnap === targetSnap) {
+        syncedSnapshot = targetSnap;
+        saveLocalState();
+        updateSyncBar();
+        showToast("✓ must-see.json ažuriran u repo-u.", 3500, "success");
+        return;
+      }
+    }
+    if (i === 4) showToast("Workflow još radi… (može trajati do ~90s)", 2500);
+  }
+  showToast("Sync nije potvrđen u 90s — proveri Actions tab. Lokalno stanje sačuvano.", 6000, "error");
+}
+
+function syncBtnHandler() {
+  if (ghToken) {
+    dispatchMustSeeUpdate();
+  } else {
+    downloadMustSeeJson();
+  }
+}
+
+function loadToken() {
+  ghToken = localStorage.getItem(TOKEN_KEY) || "";
+}
+function saveToken(t) {
+  ghToken = t;
+  if (t) localStorage.setItem(TOKEN_KEY, t);
+  else localStorage.removeItem(TOKEN_KEY);
+  refreshSyncButtonLabel();
+}
+function refreshSyncButtonLabel() {
+  const btn = document.getElementById("syncBtn");
+  btn.textContent = ghToken ? "↻ Sync to GitHub" : "⬇ Skini must-see.json";
+  btn.title = ghToken
+    ? "Direktan commit preko GitHub Actions workflow-a"
+    : "Skida fajl — pa pokreni _sync-must-see.sh ručno (ili setuj token u ⚙)";
+  // Settings (⚙) is hidden when a token is already configured.
+  // Reveal via #settings hash, or auto on auth failure (see dispatchMustSeeUpdate).
+  const settingsBtn = document.getElementById("settingsBtn");
+  if (settingsBtn) {
+    settingsBtn.style.display = ghToken && location.hash !== "#settings" ? "none" : "";
+  }
+}
+
+function openSettings() {
+  const m = document.getElementById("modalBackdrop");
+  const status = document.getElementById("tokenStatus");
+  const input  = document.getElementById("tokenInput");
+  if (ghToken) {
+    status.innerHTML = `<div class="status-saved">Token sačuvan (zadnja 4: <code>${escapeHtml(ghToken.slice(-4))}</code>)</div>`;
+    input.value = "";
+    input.placeholder = "Ostavi prazno da zadržiš trenutni token";
+  } else {
+    status.innerHTML = "";
+    input.value = "";
+    input.placeholder = "github_pat_...";
+  }
+  m.classList.add("show");
+  setTimeout(() => input.focus(), 50);
+}
+function closeSettings() {
+  document.getElementById("modalBackdrop").classList.remove("show");
+}
+
+function setupTabs() {
+  document.querySelectorAll("#tabnav button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.tab;
+      document.querySelectorAll("#tabnav button").forEach(b => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".tab-section").forEach(s => s.classList.toggle("active", s.id === "tab-" + target));
+    });
+  });
+}
+function setupViewToggle() {
+  document.querySelectorAll("#viewToggle button").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.view;
+      document.querySelectorAll("#viewToggle button").forEach(b => b.classList.toggle("active", b === btn));
+      document.querySelectorAll(".sub-view").forEach(s => s.classList.toggle("active", s.id === "view-" + target));
+    });
+  });
+}
+
+// ====== INIT ======
+
+(async function init() {
+  loadLocalState();
+  loadToken();
+  await reconcileWithRepo();
+  setupTabs();
+  setupViewToggle();
+
+  // Sync button
+  document.getElementById("syncBtn").addEventListener("click", syncBtnHandler);
+  refreshSyncButtonLabel();
+
+  // Settings modal
+  document.getElementById("settingsBtn").addEventListener("click", openSettings);
+  document.getElementById("modalCloseBtn").addEventListener("click", closeSettings);
+  // Open via URL hash (e.g. https://.../#settings) — useful when ⚙ is hidden.
+  if (location.hash === "#settings") openSettings();
+  window.addEventListener("hashchange", () => {
+    if (location.hash === "#settings") {
+      document.getElementById("settingsBtn").style.display = "";
+      openSettings();
+    }
+  });
+  document.getElementById("modalBackdrop").addEventListener("click", (e) => {
+    if (e.target.id === "modalBackdrop") closeSettings();
+  });
+  document.getElementById("tokenSaveBtn").addEventListener("click", () => {
+    const v = document.getElementById("tokenInput").value.trim();
+    if (v) {
+      if (!/^github_pat_|^ghp_/.test(v)) {
+        if (!confirm("Token ne počinje sa 'github_pat_' ili 'ghp_'. Sačuvati ipak?")) return;
+      }
+      saveToken(v);
+      showToast("Token sačuvan. Sledeći klik na Sync ide direktno na GitHub.", 3500, "success");
+    }
+    closeSettings();
+  });
+  document.getElementById("tokenClearBtn").addEventListener("click", () => {
+    if (!ghToken) return closeSettings();
+    if (!confirm("Obrisati sačuvani token?")) return;
+    saveToken("");
+    showToast("Token obrisan — Sync će sada skidati fajl.");
+    closeSettings();
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    if (mustSee.size === 0) return;
+    if (!confirm("Obrisati sve Must See?")) return;
+    mustSee.clear();
+    saveLocalState();
+    onMustSeeChange();
+  });
+  onMustSeeChange();
+})();
+</script>
+</body>
+</html>
